@@ -16,19 +16,19 @@ import {
 
 export default function App() {
   // Input States
-  const [fixedSalary, setFixedSalary] = useState<number>(0);
-  const [mrrStart, setMrrStart] = useState<number>(0);
-  const [managedBase, setManagedBase] = useState<number>(0);
-  const [sales, setSales] = useState<number>(0);
-  const [churn, setChurn] = useState<number>(0);
-  const [opPoints, setOpPoints] = useState<number>(100);
+  const [fixedSalary, setFixedSalary] = useState<number | string>("");
+  const [mrrStart, setMrrStart] = useState<number | string>("");
+  const [managedBase, setManagedBase] = useState<number | string>("");
+  const [sales, setSales] = useState<number | string>("");
+  const [churn, setChurn] = useState<number | string>("");
+  const [opPoints, setOpPoints] = useState<number | string>("100");
   const [isBestSquad, setIsBestSquad] = useState<boolean>(false);
-  const [squadMembers, setSquadMembers] = useState<number>(1);
-  const [upsellTotal, setUpsellTotal] = useState<number>(0);
-  const [leads, setLeads] = useState<number>(0);
-  const [closedMrr, setClosedMrr] = useState<number>(0);
-  const [closedOneTimeTotal, setClosedOneTimeTotal] = useState<number>(0);
-  const [renewals, setRenewals] = useState<number>(0);
+  const [squadMembers, setSquadMembers] = useState<number | string>("1");
+  const [upsellTotal, setUpsellTotal] = useState<number | string>("");
+  const [leads, setLeads] = useState<number | string>("");
+  const [closedMrr, setClosedMrr] = useState<number | string>("");
+  const [closedOneTimeTotal, setClosedOneTimeTotal] = useState<number | string>("");
+  const [renewals, setRenewals] = useState<number | string>("");
 
   // Computed States
   const [nrrPercent, setNrrPercent] = useState<number>(0);
@@ -46,10 +46,23 @@ export default function App() {
 
   // Calculations
   useEffect(() => {
+    const vFixedSalary = Number(fixedSalary) || 0;
+    const vMrrStart = Number(mrrStart) || 0;
+    const vManagedBase = Number(managedBase) || 0;
+    const vSales = Number(sales) || 0;
+    const vChurn = Number(churn) || 0;
+    const vOpPoints = Number(opPoints) || 0;
+    const vSquadMembers = Number(squadMembers) || 1;
+    const vUpsellTotal = Number(upsellTotal) || 0;
+    const vLeads = Number(leads) || 0;
+    const vClosedMrr = Number(closedMrr) || 0;
+    const vClosedOneTimeTotal = Number(closedOneTimeTotal) || 0;
+    const vRenewals = Number(renewals) || 0;
+
     // 1. NRR Calculation
     let calcNrr = 0;
-    if (mrrStart > 0) {
-      calcNrr = ((churn - sales) / mrrStart) * 100;
+    if (vMrrStart > 0) {
+      calcNrr = ((vChurn - vSales) / vMrrStart) * 100;
     }
     setNrrPercent(calcNrr);
 
@@ -65,14 +78,14 @@ export default function App() {
       currentNrrBonusPercent = 0;
     }
     setNrrBonusPercent(currentNrrBonusPercent);
-    const calculatedNrrBonus = (managedBase * currentNrrBonusPercent) / 100;
+    const calculatedNrrBonus = (vManagedBase * currentNrrBonusPercent) / 100;
     setNrrBonus(calculatedNrrBonus);
 
     // 3. Operational Excellence Bonus
     let currentOpBonus = 0;
-    if (opPoints >= 80) {
+    if (vOpPoints >= 80) {
       currentOpBonus = 200;
-    } else if (opPoints >= 50 && opPoints < 80) {
+    } else if (vOpPoints >= 50 && vOpPoints < 80) {
       currentOpBonus = 100;
     } else {
       currentOpBonus = 0; // Below 50 gets 0 (sub 20 is yellow flag)
@@ -80,22 +93,22 @@ export default function App() {
     setOpBonus(currentOpBonus);
 
     // 4. Other Bonuses
-    const currentSquadBonus = isBestSquad && squadMembers > 0 ? 500 / squadMembers : 0;
+    const currentSquadBonus = isBestSquad && vSquadMembers > 0 ? 500 / vSquadMembers : 0;
     setSquadBonus(currentSquadBonus);
 
-    const currentUpsellBonus = (upsellTotal * 15) / 100;
+    const currentUpsellBonus = (vUpsellTotal * 15) / 100;
     setUpsellBonus(currentUpsellBonus);
 
-    const currentLeadsBonus = Math.floor(leads / 10) * 50;
+    const currentLeadsBonus = Math.floor(vLeads / 10) * 50;
     setLeadsBonus(currentLeadsBonus);
 
-    const currentClosedMrrBonus = closedMrr * 1000;
+    const currentClosedMrrBonus = vClosedMrr * 1000;
     setClosedMrrBonus(currentClosedMrrBonus);
 
-    const currentClosedOneTimeBonus = (closedOneTimeTotal * 15) / 100;
+    const currentClosedOneTimeBonus = (vClosedOneTimeTotal * 15) / 100;
     setClosedOneTimeBonus(currentClosedOneTimeBonus);
 
-    const currentRenewalsBonus = renewals * 500;
+    const currentRenewalsBonus = vRenewals * 500;
     setRenewalsBonus(currentRenewalsBonus);
 
     // 5. Totals
@@ -110,7 +123,7 @@ export default function App() {
       currentRenewalsBonus;
     
     setTotalCommission(sumCompt);
-    setTotalPayout((fixedSalary || 0) + sumCompt);
+    setTotalPayout(vFixedSalary + sumCompt);
 
   }, [
     fixedSalary, mrrStart, managedBase, churn, sales, opPoints, isBestSquad, squadMembers,
@@ -130,35 +143,60 @@ export default function App() {
     return 'text-amber-500 bg-amber-50 border-amber-200';
   };
 
-  const InputGroup = ({ label, icon: Icon, value, onChange, type = "number", prefix = "", min = "0", step="any", helpText }: any) => (
-    <div className="flex flex-col w-full">
-      <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
-        {Icon && <Icon size={14} className="text-gray-400" />} {label}
-      </label>
-      <div className="relative">
-        {prefix && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <span className="text-gray-500 sm:text-sm">{prefix}</span>
-          </div>
+  const InputGroup = ({ label, icon: Icon, value, onChange, type = "number", prefix = "", helpText }: any) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const rawValue = e.target.value.replace(/\D/g, '');
+      if (!rawValue) {
+        onChange("");
+        return;
+      }
+      if (type === "currency") {
+        onChange(parseInt(rawValue, 10) / 100);
+      } else {
+        onChange(parseInt(rawValue, 10));
+      }
+    };
+
+    const displayValue = () => {
+      if (value === "" || value === null || value === undefined) return "";
+      if (type === "currency") {
+        return new Intl.NumberFormat('pt-BR', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(Number(value));
+      }
+      return value.toString();
+    };
+
+    return (
+      <div className="flex flex-col w-full">
+        <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
+          {Icon && <Icon size={14} className="text-gray-400" />} {label}
+        </label>
+        <div className="relative">
+          {prefix && (
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span className="text-gray-500 sm:text-sm font-medium">{prefix}</span>
+            </div>
+          )}
+          <input
+            type="text"
+            inputMode="numeric"
+            className={`block w-full rounded-xl border-gray-200 bg-white px-4 py-2.5 text-gray-900 border focus:border-blue-500 shadow-sm sm:text-sm transition-colors font-medium outline-none ${prefix ? 'pl-9' : ''}`}
+            value={displayValue()}
+            onChange={handleChange}
+            placeholder={type === "currency" ? "0,00" : "0"}
+          />
+        </div>
+        {helpText && (
+          <p className="text-[11px] text-gray-500 flex items-start gap-1 mt-1.5 leading-tight">
+            <Info className="w-3 h-3 flex-shrink-0 mt-0.5 opacity-70" />
+            {helpText}
+          </p>
         )}
-        <input
-          type={type}
-          min={min}
-          step={step}
-          className={`block w-full rounded-xl border-gray-200 bg-white px-4 py-2.5 text-gray-900 border focus:border-blue-500 focus:bg-blue-50 focus:ring-blue-500 shadow-sm sm:text-sm transition-colors ${prefix ? 'pl-9' : ''}`}
-          value={value === 0 && type === "number" ? "" : value}
-          onChange={(e) => onChange(type === "number" ? Number(e.target.value) : e.target.value)}
-          placeholder="0"
-        />
       </div>
-      {helpText && (
-        <p className="text-[11px] text-gray-500 flex items-start gap-1 mt-1.5 leading-tight">
-          <Info className="w-3 h-3 flex-shrink-0 mt-0.5 opacity-70" />
-          {helpText}
-        </p>
-      )}
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-[#f3f4f6] text-gray-900 font-sans p-4 sm:p-8">
@@ -184,13 +222,15 @@ export default function App() {
                 <span className="text-gray-500 sm:text-sm font-medium">R$</span>
               </div>
               <input
-                type="number"
-                min="0"
-                step="100"
-                className="block w-full rounded-lg border-gray-200 bg-gray-50 py-1.5 pl-9 pr-3 text-gray-900 border focus:border-blue-500 sm:text-sm font-bold"
-                value={fixedSalary === 0 ? "" : fixedSalary}
-                onChange={(e) => setFixedSalary(Number(e.target.value))}
-                placeholder="0.00"
+                type="text"
+                inputMode="numeric"
+                className="block w-full rounded-lg border-gray-200 bg-gray-50 py-1.5 pl-9 pr-3 text-gray-900 border outline-none focus:border-blue-500 sm:text-sm font-bold"
+                value={fixedSalary === "" ? "" : new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(fixedSalary))}
+                onChange={(e) => {
+                  const rawValue = e.target.value.replace(/\D/g, '');
+                  setFixedSalary(rawValue ? parseInt(rawValue, 10) / 100 : "");
+                }}
+                placeholder="0,00"
               />
             </div>
           </div>
@@ -215,8 +255,9 @@ export default function App() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InputGroup 
-                  label="MRR Total Gerenciado (Base)" 
+                  label="Total Gerenciado (ARR+MRR)" 
                   icon={DollarSign} 
+                  type="currency"
                   prefix="R$" 
                   value={managedBase} 
                   onChange={setManagedBase} 
@@ -225,6 +266,7 @@ export default function App() {
                 <InputGroup 
                   label="MRR Início do Mês" 
                   icon={DollarSign} 
+                  type="currency"
                   prefix="R$" 
                   value={mrrStart} 
                   onChange={setMrrStart} 
@@ -233,6 +275,7 @@ export default function App() {
                 <InputGroup 
                   label="Vendas (Novo MRR)" 
                   icon={TrendingUp} 
+                  type="currency"
                   prefix="R$" 
                   value={sales} 
                   onChange={setSales} 
@@ -241,6 +284,7 @@ export default function App() {
                 <InputGroup 
                   label="Churn e Downgrades" 
                   icon={TrendingDown} 
+                  type="currency"
                   prefix="R$" 
                   value={churn} 
                   onChange={setChurn} 
@@ -384,6 +428,7 @@ export default function App() {
                 <InputGroup 
                   label="Upsell / Cross-Sell" 
                   icon={TrendingUp} 
+                  type="currency"
                   prefix="R$" 
                   value={upsellTotal} 
                   onChange={setUpsellTotal} 
@@ -403,6 +448,7 @@ export default function App() {
                 <InputGroup 
                   label="Pagamento one time (Total 1º Pag)" 
                   icon={DollarSign} 
+                  type="currency"
                   prefix="R$" 
                   value={closedOneTimeTotal} 
                   onChange={setClosedOneTimeTotal} 
